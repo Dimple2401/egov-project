@@ -5,11 +5,11 @@ import time
 # Page Config
 st.set_page_config(page_title="E-Governance Portal", page_icon="🏛️", layout="wide")
 
-# Custom CSS for Animations & UI Styling
+# Custom CSS for High Contrast UI & Animations
 st.markdown("""
     <style>
     .main {
-        background-color: #f8f9fa;
+        background-color: #f4f6f9;
     }
     .stButton>button {
         background-color: #ff9933;
@@ -26,18 +26,26 @@ st.markdown("""
     .card {
         padding: 20px;
         border-radius: 10px;
-        background-color: white;
+        background-color: #ffffff;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         margin-bottom: 20px;
+        color: #2c3e50 !important; /* Force high contrast visible text */
+    }
+    .card h3, .card h4, .card p, .card li {
+        color: #2c3e50 !important;
     }
     </style>
 """, unsafe_allow_html=True)
 
-# Initialize Session State for Authentication & Database Mock
+# Initialize Session State for Database Mock & User Data
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
 if "user_id" not in st.session_state:
     st.session_state.user_id = ""
+if "last_receipt" not in st.session_state:
+    st.session_state.last_receipt = None
+if "last_app_id" not in st.session_state:
+    st.session_state.last_app_id = None
 if "applications" not in st.session_state:
     st.session_state.applications = {
         "GOV-12345": {"name": "Dimple Sanjay Parihar", "type": "Birth Certificate", "status": "Approved & Verified"},
@@ -45,12 +53,12 @@ if "applications" not in st.session_state:
     }
 if "grievances" not in st.session_state:
     st.session_state.grievances = {
-        "GRV-11111": {"name": "Dimple Sanjay Parihar", "category": "Street Lights", "status": "In Progress"}
+        "GRV-11111": {"name": "Dimple Sanjay Parihar", "contact": "9876543210", "category": "Street Lights", "desc": "Non-working street light near main square.", "status": "In Progress (Assigned to Municipal Engineer)"}
     }
 
 # App Header
-st.markdown("<h1 style='text-align: center; color: #1f4e78;'>🏛️ Digital Citizen E-Governance Portal</h1>", unsafe_allow_html=True)
-st.markdown("<p style='text-align: center; color: gray;'>Secure, Transparent, and Fast Public Services</p>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #1f4e78;'>🏛️️ Digital Citizen E-Governance Portal</h1>", unsafe_allow_html=True)
+st.markdown("<p style='text-align: center; color: #555555; font-weight: bold;'>Secure, Transparent, and Fast Public Services</p>", unsafe_allow_html=True)
 st.divider()
 
 # Authentication Sidebar / Login Gate
@@ -62,7 +70,6 @@ if not st.session_state.logged_in:
         login_btn = st.form_submit_button("Login to Portal")
         
         if login_btn:
-            # Validating specific IDs
             valid_users = {"CITIZEN-01": "1234", "CITIZEN-02": "5678", "ADMIN": "admin123"}
             if entered_id in valid_users and valid_users[entered_id] == entered_pass:
                 st.session_state.logged_in = True
@@ -70,7 +77,7 @@ if not st.session_state.logged_in:
                 st.success("Login Successful!")
                 st.rerun()
             else:
-                st.error("❌ Invalid Citizen ID or PIN! (Try ID: CITIZEN-01, PIN: 1234)")
+                st.error("❌ Invalid ID or PIN! (Try ID: CITIZEN-01, PIN: 1234)")
     
     st.sidebar.info("💡 **Demo Login Credentials:**\n- ID: `CITIZEN-01` | PIN: `1234`")
     menu = "Home"
@@ -79,10 +86,11 @@ else:
     if st.sidebar.button("🚪 Logout"):
         st.session_state.logged_in = False
         st.session_state.user_id = ""
+        st.session_state.last_receipt = None
+        st.session_state.last_app_id = None
         st.rerun()
     
-    # Sidebar Navigation after login
-    menu = st.sidebar.radio("Navigation", ["Home", "Apply for Certificate", "Track Application", "File Grievance", "My Dashboard"])
+    menu = st.sidebar.radio("Navigation", ["Home", "Apply for Certificate", "Track Application / Grievance", "File Grievance", "My Dashboard"])
 
 # 1. Home Section
 if menu == "Home":
@@ -139,69 +147,79 @@ elif menu == "Apply for Certificate":
                 elif len(mobile) != 10 or not mobile.isdigit():
                     st.error("❌ Please enter a valid 10-digit mobile number.")
                 else:
-                    with st.spinner("Encrypting and submitting to server..."):
-                        time.sleep(1.5)
                     app_id = f"GOV-{random.randint(10000, 99999)}"
                     st.session_state.applications[app_id] = {
                         "name": name,
                         "type": cert_type,
                         "status": "Pending Verification"
                     }
-                    st.balloons()
-                    st.success(f"🎉 Application submitted successfully! Your Application ID is: **{app_id}**")
-                    st.info("Save this ID to track your application status.")
-                    
-                    # Download Receipt Button
-                    receipt_text = f"E-GOVERNANCE PORTAL RECEIPT\nApplication ID: {app_id}\nName: {name}\nType: {cert_type}\nStatus: Pending Verification"
-                    st.download_button("📥 Download Official Receipt", receipt_text, file_name=f"{app_id}_receipt.txt")
+                    st.session_state.last_app_id = app_id
+                    st.session_state.last_receipt = f"E-GOVERNANCE PORTAL RECEIPT\nApplication ID: {app_id}\nName: {name}\nType: {cert_type}\nStatus: Pending Verification"
+        
+        # Download button form ke bahar render hoga taaki error na aaye aur text visible ho
+        if st.session_state.last_receipt and st.session_state.last_app_id:
+            st.balloons()
+            st.success(f"🎉 Application submitted successfully! Your Application ID is: **{st.session_state.last_app_id}**")
+            st.download_button("📥 Download Official Receipt", st.session_state.last_receipt, file_name=f"{st.session_state.last_app_id}_receipt.txt")
 
-# 3. Track Application Status
-elif menu == "Track Application":
-    st.subheader("🔍 Track Your Application Status")
-    st.write("Enter your registered Application ID (e.g., `GOV-12345` or a newly generated one).")
+# 3. Track Application or Grievance
+elif menu == "Track Application / Grievance":
+    st.subheader("🔍 Universal Status Tracker")
+    st.write("Enter either your **Certificate Application ID** (e.g., `GOV-12345`) or **Grievance Reference ID** (e.g., `GRV-11111`).")
     
     col1, col2 = st.columns([3, 1])
     with col1:
-        track_id = st.text_input("Application ID", placeholder="GOV-XXXXX")
+        search_id = st.text_input("Enter Tracking / Reference ID", placeholder="GOV-XXXXX or GRV-XXXXX")
     with col2:
         st.markdown("<br>", unsafe_allow_html=True)
         check_btn = st.button("Check Status")
     
     if check_btn:
-        if not track_id:
-            st.warning("⚠️️ Please enter an Application ID.")
+        if not search_id:
+            st.warning("⚠ Please enter a valid ID.")
         else:
-            with st.spinner("Searching government database..."):
-                time.sleep(1)
-            
-            # Validating if ID exists in system records
-            if track_id in st.session_state.applications:
-                app_info = st.session_state.applications[track_id]
-                st.success(f"✅ Record Found for **{track_id}**")
+            # Check if it's an Application ID
+            if search_id in st.session_state.applications:
+                app_info = st.session_state.applications[search_id]
+                st.success(f"✅ Certificate Record Found for **{search_id}**")
                 st.markdown(f"""
                 <div class='card'>
-                <h4>Application Details:</h4>
+                <h4>Certificate Application Details:</h4>
                 <p><b>Applicant Name:</b> {app_info['name']}</p>
                 <p><b>Service Type:</b> {app_info['type']}</p>
-                <p><b>Current Status:</b> <span style='color: green; font-weight: bold;'>{app_info['status']}</span></p>
+                <p><b>Current Status:</b> <span style='color: #27ae60; font-weight: bold;'>{app_info['status']}</span></p>
+                </div>
+                """, unsafe_allow_html=True)
+            
+            # Check if it's a Grievance ID
+            elif search_id in st.session_state.grievances:
+                g_info = st.session_state.grievances[search_id]
+                st.success(f"✅ Grievance Record Found for **{search_id}**")
+                st.markdown(f"""
+                <div class='card'>
+                <h4>Grievance Ticket Details:</h4>
+                <p><b>Complainant Name:</b> {g_info['name']}</p>
+                <p><b>Issue Category:</b> {g_info['category']}</p>
+                <p><b>Description:</b> {g_info['desc']}</p>
+                <p><b>Current Status:</b> <span style='color: #d35400; font-weight: bold;'>{g_info['status']}</span></p>
                 </div>
                 """, unsafe_allow_html=True)
             else:
-                st.error(f"❌ **Invalid Application ID:** `{track_id}` was not found in the e-governance database. Please verify your ID or try the demo ID: `GOV-12345`.")
+                st.error(f"❌ **Invalid ID:** `{search_id}` was not found in the e-governance database. Please verify your ID.")
 
-# 4. File Grievance / Complaint
+# 4. File Grievance / Complaint (With Permanent Data Saving)
 elif menu == "File Grievance":
     if not st.session_state.logged_in:
-        st.warning("⚠️ Please login first from the sidebar to lodge grievances.")
+        st.warning("⚠️️ Please login first from the sidebar to lodge grievances.")
     else:
         st.subheader("📢 Public Grievance Redressal Portal")
-        st.write("Report civic issues (potholes, water supply, street lights) directly to municipal authorities.")
+        st.write("Report civic issues (potholes, water supply, street lights) directly to municipal authorities. Data is saved securely.")
         
         with st.form("grievance_form"):
             col1, col2 = st.columns(2)
             with col1:
                 g_name = st.text_input("Your Name")
-                g_contact = st.text_input("Contact Number")
+                g_contact = st.text_input("Contact Number", placeholder="10-digit number")
             with col2:
                 issue_category = st.selectbox("Category", ["Street Lights", "Water Supply", "Road/Potholes", "Sanitation", "Garbage Collection"])
                 location = st.text_input("Area / Landmark")
@@ -216,22 +234,23 @@ elif menu == "File Grievance":
                 elif len(g_contact) != 10 or not g_contact.isdigit():
                     st.error("❌ Please enter a valid 10-digit contact number.")
                 else:
-                    with st.spinner("Submitting complaint ticket..."):
-                        time.sleep(1)
                     ref_id = f"GRV-{random.randint(10000, 99999)}"
+                    # Saving complaint data into session dictionary
                     st.session_state.grievances[ref_id] = {
                         "name": g_name,
+                        "contact": g_contact,
                         "category": issue_category,
-                        "status": "Registered & Assigned to Officer"
+                        "desc": g_desc,
+                        "status": "Registered & Forwarded to Department"
                     }
                     st.snow()
-                    st.success(f"✅ Grievance registered successfully! Reference ID: **{ref_id}**")
-                    st.info("You can track this complaint using your Reference ID.")
+                    st.success(f"✅ Grievance registered and saved successfully! Reference ID: **{ref_id}**")
+                    st.info("You can use this Reference ID anytime in the tracking section.")
 
 # 5. My Dashboard
 elif menu == "My Dashboard":
     st.subheader(f"📊 Dashboard for User: {st.session_state.user_id}")
-    st.markdown("Here is the summary of all activities linked with your account:")
+    st.markdown("Here is the summary of all applications and filed complaints linked with your session:")
     
     st.markdown("### 📝 Your Submitted Applications")
     if st.session_state.applications:
@@ -240,15 +259,18 @@ elif menu == "My Dashboard":
     else:
         st.info("No applications submitted yet.")
         
-    st.markdown("### 📢 Your Filed Grievances")
+    st.markdown("### 📢 Your Filed Grievances & Complaints")
     if st.session_state.grievances:
         for gid, ginfo in st.session_state.grievances.items():
-            st.markdown(f"- **{gid}**: {ginfo['category']} — Status: *{ginfo['status']}*")
+            st.markdown(f"- **{gid}** [{ginfo['category']}]: {ginfo['desc']} — Status: *{ginfo['status']}*")
     else:
         st.info("No grievances filed yet.")
     
+    st.markdown("<br>", unsafe_allow_html=True)
     if st.button("🔄 Reset / Clear Session Data"):
         st.session_state.applications = {}
         st.session_state.grievances = {}
+        st.session_state.last_receipt = None
+        st.session_state.last_app_id = None
         st.success("Session data cleared successfully!")
         st.rerun()
