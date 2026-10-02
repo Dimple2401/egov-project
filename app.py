@@ -48,6 +48,38 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
+# Helper Function for Glowing Falling Stars Effect
+def glowing_falling_stars():
+    st.markdown("""
+        <style>
+        @keyframes fallStar {
+            0% { transform: translateY(-10px) translateX(0); opacity: 1; filter: drop-shadow(0 0 6px #ffD700); }
+            100% { transform: translateY(80vh) translateX(50px); opacity: 0; filter: drop-shadow(0 0 12px #ff9933); }
+        }
+        .glowing-star {
+            position: fixed;
+            width: 6px;
+            height: 6px;
+            background: #fff;
+            box-shadow: 0 0 10px #ffD700, 0 0 20px #ff9933, 0 0 30px #ffcc00;
+            animation: fallStar 2.5s linear infinite;
+            z-index: 99999;
+            border-radius: 50%;
+        }
+        </style>
+        <div style="position:fixed;top:10vh;left:0;width:100vw;height:70vh;pointer-events:none;overflow:hidden;z-index:99998;">
+            <div class="glowing-star" style="left: 10%; animation-duration: 2.1s; animation-delay: 0.1s;"></div>
+            <div class="glowing-star" style="left: 25%; animation-duration: 2.6s; animation-delay: 0.4s;"></div>
+            <div class="glowing-star" style="left: 40%; animation-duration: 1.8s; animation-delay: 0.2s;"></div>
+            <div class="glowing-star" style="left: 55%; animation-duration: 2.3s; animation-delay: 0.5s;"></div>
+            <div class="glowing-star" style="left: 70%; animation-duration: 2.0s; animation-delay: 0.15s;"></div>
+            <div class="glowing-star" style="left: 85%; animation-duration: 2.4s; animation-delay: 0.3s;"></div>
+            <div class="glowing-star" style="left: 15%; animation-duration: 1.9s; animation-delay: 0.6s;"></div>
+            <div class="glowing-star" style="left: 50%; animation-duration: 2.2s; animation-delay: 0.25s;"></div>
+            <div class="glowing-star" style="left: 80%; animation-duration: 2.5s; animation-delay: 0.45s;"></div>
+        </div>
+    """, unsafe_allow_html=True)
+
 # Initialize Session State for Database Mock & User Data
 if "logged_in" not in st.session_state:
     st.session_state.logged_in = False
@@ -162,14 +194,14 @@ elif menu == "Apply for Certificate":
                     st.session_state.applications[app_id] = {
                         "name": name,
                         "type": cert_type,
-                        "status": "Approved & Verified", # Automatically approved for quick demonstration
+                        "status": "Approved & Verified",
                         "address": address
                     }
                     st.session_state.last_app_id = app_id
                     st.session_state.last_receipt = f"E-GOVERNANCE PORTAL RECEIPT\nApplication ID: {app_id}\nName: {name}\nType: {cert_type}\nStatus: Approved & Verified"
         
         if st.session_state.last_receipt and st.session_state.last_app_id:
-            st.balloons()
+            glowing_falling_stars()
             st.success(f"🎉 Application approved successfully! Your Application ID is: **{st.session_state.last_app_id}**")
             st.download_button("📥 Download Official Receipt", st.session_state.last_receipt, file_name=f"{st.session_state.last_app_id}_receipt.txt")
 
@@ -215,7 +247,7 @@ elif menu == "Track Application":
             else:
                 st.error(f"❌ **Invalid ID:** `{search_id}` was not found in the e-governance database. Please verify your ID.")
 
-# 4. Download Digital Certificates (NEW FEATURE)
+# 4. Download Digital Certificates
 elif menu == "Download Certificates":
     st.subheader("📜 Official Digital Certificate Issuance")
     st.write("Enter your verified Application ID (e.g., `GOV-12345`) to view and download your government-issued digital certificate.")
@@ -228,10 +260,9 @@ elif menu == "Download Certificates":
         elif cert_search in st.session_state.applications:
             app_data = st.session_state.applications[cert_search]
             if "Approved" in app_data['status']:
-                st.stars()
+                glowing_falling_stars()
                 st.success("✅ Certificate verified successfully!")
                 
-                # Realistic Government Certificate Card Layout
                 cert_html = f"""
                 <div class="certificate-box">
                     <div style="text-align: center;">
@@ -260,7 +291,6 @@ elif menu == "Download Certificates":
                 """
                 st.markdown(cert_html, unsafe_allow_html=True)
                 
-                # Download File Button
                 cert_file_text = f"--- GOVERNMENT OF INDIA DIGITAL CERTIFICATE ---\nType: {app_data['type']}\nID: CERT-{cert_search}\nName: {app_data['name']}\nStatus: Authentic & Verified\nDate: 2026-10-02"
                 st.download_button("📥 Download Official Digital Certificate (TXT/PDF)", cert_file_text, file_name=f"{cert_search}_Certificate.txt")
             else:
@@ -303,7 +333,7 @@ elif menu == "File Grievance":
                         "desc": g_desc,
                         "status": "Registered & Forwarded to Department"
                     }
-                    st.snow()
+                    glowing_falling_stars()
                     st.success(f"✅ Grievance registered and saved successfully! Reference ID: **{ref_id}**")
                     st.info("You can use this Reference ID anytime in the tracking section.")
 
