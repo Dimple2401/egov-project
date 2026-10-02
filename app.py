@@ -5,7 +5,7 @@ import time
 # Page Config
 st.set_page_config(page_title="E-Governance Portal", page_icon="🏛️", layout="wide")
 
-# Custom CSS for High Contrast UI & Animations
+# Custom CSS for High Contrast UI, Government Aesthetic & Animations
 st.markdown("""
     <style>
     .main {
@@ -29,10 +29,21 @@ st.markdown("""
         background-color: #ffffff;
         box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         margin-bottom: 20px;
-        color: #2c3e50 !important; /* Force high contrast visible text */
+        color: #2c3e50 !important;
     }
     .card h3, .card h4, .card p, .card li {
         color: #2c3e50 !important;
+    }
+    /* Official Government Certificate Box Style */
+    .certificate-box {
+        border: 5px double #1f4e78;
+        padding: 30px;
+        border-radius: 15px;
+        background-color: #fffdf9;
+        box-shadow: 0 6px 12px rgba(0,0,0,0.15);
+        color: #1a1a1a;
+        margin-top: 20px;
+        margin-bottom: 20px;
     }
     </style>
 """, unsafe_allow_html=True)
@@ -48,8 +59,8 @@ if "last_app_id" not in st.session_state:
     st.session_state.last_app_id = None
 if "applications" not in st.session_state:
     st.session_state.applications = {
-        "GOV-12345": {"name": "Dimple Sanjay Parihar", "type": "Birth Certificate", "status": "Approved & Verified"},
-        "GOV-98765": {"name": "Rahul Sharma", "type": "Income Certificate", "status": "Under District Officer Verification"},
+        "GOV-12345": {"name": "Dimple Sanjay Parihar", "type": "Birth Certificate", "status": "Approved & Verified", "address": "Pune, Maharashtra"},
+        "GOV-98765": {"name": "Rahul Sharma", "type": "Income Certificate", "status": "Under District Officer Verification", "address": "Mumbai, Maharashtra"},
     }
 if "grievances" not in st.session_state:
     st.session_state.grievances = {
@@ -57,7 +68,7 @@ if "grievances" not in st.session_state:
     }
 
 # App Header
-st.markdown("<h1 style='text-align: center; color: #1f4e78;'>🏛️️ Digital Citizen E-Governance Portal</h1>", unsafe_allow_html=True)
+st.markdown("<h1 style='text-align: center; color: #1f4e78;'>🏛️ Digital Citizen E-Governance Portal</h1>", unsafe_allow_html=True)
 st.markdown("<p style='text-align: center; color: #555555; font-weight: bold;'>Secure, Transparent, and Fast Public Services</p>", unsafe_allow_html=True)
 st.divider()
 
@@ -90,7 +101,7 @@ else:
         st.session_state.last_app_id = None
         st.rerun()
     
-    menu = st.sidebar.radio("Navigation", ["Home", "Apply for Certificate", "Track Application / Grievance", "File Grievance", "My Dashboard"])
+    menu = st.sidebar.radio("Navigation", ["Home", "Apply for Certificate", "Track Application", "Download Certificates", "File Grievance", "My Dashboard"])
 
 # 1. Home Section
 if menu == "Home":
@@ -107,7 +118,7 @@ if menu == "Home":
     <div class='card'>
     <h3>🌟 Key Services Offered:</h3>
     <ul>
-        <li><b>Certificates:</b> Instant application for Birth, Income, and Caste certificates.</li>
+        <li><b>Certificates:</b> Instant application and digital issuance for Birth, Income, and Caste certificates.</li>
         <li><b>Identity Updates:</b> Seamless Aadhar and PAN card linkage support.</li>
         <li><b>Public Grievances:</b> Quick redressal tracking for civic infrastructure issues.</li>
     </ul>
@@ -151,19 +162,19 @@ elif menu == "Apply for Certificate":
                     st.session_state.applications[app_id] = {
                         "name": name,
                         "type": cert_type,
-                        "status": "Pending Verification"
+                        "status": "Approved & Verified", # Automatically approved for quick demonstration
+                        "address": address
                     }
                     st.session_state.last_app_id = app_id
-                    st.session_state.last_receipt = f"E-GOVERNANCE PORTAL RECEIPT\nApplication ID: {app_id}\nName: {name}\nType: {cert_type}\nStatus: Pending Verification"
+                    st.session_state.last_receipt = f"E-GOVERNANCE PORTAL RECEIPT\nApplication ID: {app_id}\nName: {name}\nType: {cert_type}\nStatus: Approved & Verified"
         
-        # Download button form ke bahar render hoga taaki error na aaye aur text visible ho
         if st.session_state.last_receipt and st.session_state.last_app_id:
             st.balloons()
-            st.success(f"🎉 Application submitted successfully! Your Application ID is: **{st.session_state.last_app_id}**")
+            st.success(f"🎉 Application approved successfully! Your Application ID is: **{st.session_state.last_app_id}**")
             st.download_button("📥 Download Official Receipt", st.session_state.last_receipt, file_name=f"{st.session_state.last_app_id}_receipt.txt")
 
-# 3. Track Application or Grievance
-elif menu == "Track Application / Grievance":
+# 3. Track Application Status
+elif menu == "Track Application":
     st.subheader("🔍 Universal Status Tracker")
     st.write("Enter either your **Certificate Application ID** (e.g., `GOV-12345`) or **Grievance Reference ID** (e.g., `GRV-11111`).")
     
@@ -178,7 +189,6 @@ elif menu == "Track Application / Grievance":
         if not search_id:
             st.warning("⚠ Please enter a valid ID.")
         else:
-            # Check if it's an Application ID
             if search_id in st.session_state.applications:
                 app_info = st.session_state.applications[search_id]
                 st.success(f"✅ Certificate Record Found for **{search_id}**")
@@ -190,8 +200,6 @@ elif menu == "Track Application / Grievance":
                 <p><b>Current Status:</b> <span style='color: #27ae60; font-weight: bold;'>{app_info['status']}</span></p>
                 </div>
                 """, unsafe_allow_html=True)
-            
-            # Check if it's a Grievance ID
             elif search_id in st.session_state.grievances:
                 g_info = st.session_state.grievances[search_id]
                 st.success(f"✅ Grievance Record Found for **{search_id}**")
@@ -207,10 +215,63 @@ elif menu == "Track Application / Grievance":
             else:
                 st.error(f"❌ **Invalid ID:** `{search_id}` was not found in the e-governance database. Please verify your ID.")
 
-# 4. File Grievance / Complaint (With Permanent Data Saving)
+# 4. Download Digital Certificates (NEW FEATURE)
+elif menu == "Download Certificates":
+    st.subheader("📜 Official Digital Certificate Issuance")
+    st.write("Enter your verified Application ID (e.g., `GOV-12345`) to view and download your government-issued digital certificate.")
+    
+    cert_search = st.text_input("Enter Approved Application ID", placeholder="GOV-XXXXX")
+    
+    if st.button("Generate & View Certificate"):
+        if not cert_search:
+            st.warning("⚠️ Please enter an Application ID.")
+        elif cert_search in st.session_state.applications:
+            app_data = st.session_state.applications[cert_search]
+            if "Approved" in app_data['status']:
+                st.snow()
+                st.success("✅ Certificate verified successfully!")
+                
+                # Realistic Government Certificate Card Layout
+                cert_html = f"""
+                <div class="certificate-box">
+                    <div style="text-align: center;">
+                        <h3><b>GOVERNMENT OF INDIA / STATE ADMINISTRATION</b></h3>
+                        <h4><b>Department of Civil Services & Revenue</b></h4>
+                        <hr style="border: 1px solid #1f4e78;">
+                        <h2 style="color: #b8860b; margin-top: 15px;">🌟 CERTIFICATE OF {app_data['type'].upper()} 🌟</h2>
+                        <p style="font-size: 14px; color: gray;">[Issued under the Digital Citizen E-Governance Act]</p>
+                    </div>
+                    <br>
+                    <p style="font-size: 16px; line-height: 1.8;">
+                        This is to certify that <b>{app_data['name']}</b>, resident of <b>{app_data.get('address', 'Registered District')}</b>, has been duly verified and registered under our database for the issuance of <b>{app_data['type']}</b>.
+                    </p>
+                    <br>
+                    <table style="width: 100%; font-size: 14px; margin-top: 20px;">
+                        <tr>
+                            <td><b>Certificate ID:</b> CERT-{cert_search}</td>
+                            <td style="text-align: right;"><b>Issue Date:</b> October 2, 2026</td>
+                        </tr>
+                        <tr>
+                            <td><b>Verification Status:</b> <span style="color: green;">AUTHENTIC & VALID</span></td>
+                            <td style="text-align: right;"><b>Authorized Signatory:</b> District Revenue Officer ✒️</td>
+                        </tr>
+                    </table>
+                </div>
+                """
+                st.markdown(cert_html, unsafe_allow_html=True)
+                
+                # Download File Button
+                cert_file_text = f"--- GOVERNMENT OF INDIA DIGITAL CERTIFICATE ---\nType: {app_data['type']}\nID: CERT-{cert_search}\nName: {app_data['name']}\nStatus: Authentic & Verified\nDate: 2026-10-02"
+                st.download_button("📥 Download Official Digital Certificate (TXT/PDF)", cert_file_text, file_name=f"{cert_search}_Certificate.txt")
+            else:
+                st.warning(f"⚠️ Application `{cert_search}` is still pending verification. Certificates can only be downloaded once approved.")
+        else:
+            st.error(f"❌ Invalid Application ID `{cert_search}`. Try using the demo ID: `GOV-12345`.")
+
+# 5. File Grievance / Complaint
 elif menu == "File Grievance":
     if not st.session_state.logged_in:
-        st.warning("⚠️️ Please login first from the sidebar to lodge grievances.")
+        st.warning("⚠️ Please login first from the sidebar to lodge grievances.")
     else:
         st.subheader("📢 Public Grievance Redressal Portal")
         st.write("Report civic issues (potholes, water supply, street lights) directly to municipal authorities. Data is saved securely.")
@@ -235,7 +296,6 @@ elif menu == "File Grievance":
                     st.error("❌ Please enter a valid 10-digit contact number.")
                 else:
                     ref_id = f"GRV-{random.randint(10000, 99999)}"
-                    # Saving complaint data into session dictionary
                     st.session_state.grievances[ref_id] = {
                         "name": g_name,
                         "contact": g_contact,
@@ -247,7 +307,7 @@ elif menu == "File Grievance":
                     st.success(f"✅ Grievance registered and saved successfully! Reference ID: **{ref_id}**")
                     st.info("You can use this Reference ID anytime in the tracking section.")
 
-# 5. My Dashboard
+# 6. My Dashboard
 elif menu == "My Dashboard":
     st.subheader(f"📊 Dashboard for User: {st.session_state.user_id}")
     st.markdown("Here is the summary of all applications and filed complaints linked with your session:")
