@@ -48,20 +48,20 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Helper Function for Glowing Falling Stars Effect (Replacing Snow Animation)
+# Helper Function for Larger Glowing Falling Stars Effect
 def glowing_falling_stars():
     st.markdown("""
         <style>
         @keyframes fallStar {
-            0% { transform: translateY(-10px) translateX(0); opacity: 1; filter: drop-shadow(0 0 6px #ffD700); }
-            100% { transform: translateY(80vh) translateX(50px); opacity: 0; filter: drop-shadow(0 0 12px #ff9933); }
+            0% { transform: translateY(-10px) translateX(0); opacity: 1; filter: drop-shadow(0 0 10px #ffD700); }
+            100% { transform: translateY(80vh) translateX(50px); opacity: 0; filter: drop-shadow(0 0 20px #ff9933); }
         }
         .glowing-star {
             position: fixed;
-            width: 6px;
-            height: 6px;
+            width: 14px;
+            height: 14px;
             background: #fff;
-            box-shadow: 0 0 10px #ffD700, 0 0 20px #ff9933, 0 0 30px #ffcc00;
+            box-shadow: 0 0 15px #ffD700, 0 0 30px #ff9933, 0 0 45px #ffcc00;
             animation: fallStar 2.5s linear infinite;
             z-index: 99999;
             border-radius: 50%;
@@ -247,7 +247,7 @@ elif menu == "Track Application":
             else:
                 st.error(f"❌ **Invalid ID:** `{search_id}` was not found in the e-governance database. Please verify your ID.")
 
-# 4. Download Digital Certificates (Triggers Stars replacing Snow)
+# 4. Download Digital Certificates (Triggers Larger Stars Animation)
 elif menu == "Download Certificates":
     st.subheader("📜 Official Digital Certificate Issuance")
     st.write("Enter your verified Application ID (e.g., `GOV-12345`) to view and download your government-issued digital certificate.")
@@ -260,7 +260,7 @@ elif menu == "Download Certificates":
         elif cert_search in st.session_state.applications:
             app_data = st.session_state.applications[cert_search]
             if "Approved" in app_data['status']:
-                glowing_falling_stars()  # Custom stars animation replacing snow here
+                glowing_falling_stars()  # Larger stars animation replacing snow here
                 st.success("✅ Certificate verified successfully!")
                 
                 cert_html = f"""
