@@ -228,7 +228,7 @@ elif menu == "Download Certificates":
         elif cert_search in st.session_state.applications:
             app_data = st.session_state.applications[cert_search]
             if "Approved" in app_data['status']:
-                st.snow()
+                st.stars()
                 st.success("✅ Certificate verified successfully!")
                 
                 # Realistic Government Certificate Card Layout
