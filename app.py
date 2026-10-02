@@ -48,7 +48,7 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Helper Function for Glowing Falling Stars Effect
+# Helper Function for Glowing Falling Stars Effect (Replacing Snow Animation)
 def glowing_falling_stars():
     st.markdown("""
         <style>
@@ -160,7 +160,7 @@ if menu == "Home":
     if not st.session_state.logged_in:
         st.warning("⚠️ Please log in using the sidebar (Demo ID: `CITIZEN-01`, PIN: `1234`) to access application forms and tracking features.")
 
-# 2. Apply for Certificate
+# 2. Apply for Certificate (Triggers Native Balloons)
 elif menu == "Apply for Certificate":
     if not st.session_state.logged_in:
         st.warning("⚠️ Please login first from the sidebar to submit applications.")
@@ -201,7 +201,7 @@ elif menu == "Apply for Certificate":
                     st.session_state.last_receipt = f"E-GOVERNANCE PORTAL RECEIPT\nApplication ID: {app_id}\nName: {name}\nType: {cert_type}\nStatus: Approved & Verified"
         
         if st.session_state.last_receipt and st.session_state.last_app_id:
-            glowing_falling_stars()
+            st.balloons()  # Preserved native balloon animation here
             st.success(f"🎉 Application approved successfully! Your Application ID is: **{st.session_state.last_app_id}**")
             st.download_button("📥 Download Official Receipt", st.session_state.last_receipt, file_name=f"{st.session_state.last_app_id}_receipt.txt")
 
@@ -247,7 +247,7 @@ elif menu == "Track Application":
             else:
                 st.error(f"❌ **Invalid ID:** `{search_id}` was not found in the e-governance database. Please verify your ID.")
 
-# 4. Download Digital Certificates
+# 4. Download Digital Certificates (Triggers Stars replacing Snow)
 elif menu == "Download Certificates":
     st.subheader("📜 Official Digital Certificate Issuance")
     st.write("Enter your verified Application ID (e.g., `GOV-12345`) to view and download your government-issued digital certificate.")
@@ -260,7 +260,7 @@ elif menu == "Download Certificates":
         elif cert_search in st.session_state.applications:
             app_data = st.session_state.applications[cert_search]
             if "Approved" in app_data['status']:
-                glowing_falling_stars()
+                glowing_falling_stars()  # Custom stars animation replacing snow here
                 st.success("✅ Certificate verified successfully!")
                 
                 cert_html = f"""
@@ -333,7 +333,6 @@ elif menu == "File Grievance":
                         "desc": g_desc,
                         "status": "Registered & Forwarded to Department"
                     }
-                    glowing_falling_stars()
                     st.success(f"✅ Grievance registered and saved successfully! Reference ID: **{ref_id}**")
                     st.info("You can use this Reference ID anytime in the tracking section.")
 
